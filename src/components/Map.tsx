@@ -1,27 +1,33 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { GoogleMap, useJsApiLoader } from "@react-google-maps/api";
 
 const containerStyle = {
-  width: "100vh",
-  height: "100vh",
+  width: "100%",
+  height: "100%",
 };
 
-const Map = (center: any) => {
+const Map = () => {
+  const [position, setPosition] = useState({ lat: 0, long: 0 });
+
   useEffect(() => {
     if ("geolocation" in navigator) {
-      console.log("Available");
       navigator.geolocation.getCurrentPosition(function (position) {
-        console.log("Latitude is :", position.coords.latitude);
-        console.log("Longitude is :", position.coords.longitude);
+        console.log(position.coords.latitude)
+        console.log(position.coords.longitude)
+        setPosition({
+          lat: position.coords.latitude,
+          long: position.coords.longitude,
+        });
       });
     } else {
-      console.log("Not Available");
+      console.log("This app requires your location");
     }
   }, []);
 
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
-    googleMapsApiKey: process.env.API_KEY || "API KEY HERE",
+    googleMapsApiKey:
+      process.env.API_KEY || "API_KEY",
   });
 
   const [map, setMap] = React.useState(null);
@@ -37,13 +43,11 @@ const Map = (center: any) => {
   }, []);
 
   return isLoaded ? (
-    <div style={{ alignSelf: "center", justifyContent: "center" }}>
+    <div style={{display: "flex", alignSelf: "center", justifyContent: "center", height: "100%"}}>
+    <div style={{ height: "800px", width: "800px" }}>
       <GoogleMap
         mapContainerStyle={containerStyle}
-        center={{
-          lat: 51.486272882746455,
-          lng: -0.121759730492082,
-        }}
+        center={new google.maps.LatLng(position.lat, position.long)}
         zoom={12}
         onLoad={onLoad}
         onUnmount={onUnmount}
@@ -51,6 +55,8 @@ const Map = (center: any) => {
         {/* Child components, such as markers, info windows, etc. */}
         <></>
       </GoogleMap>
+    </div>
+
     </div>
   ) : (
     <></>
