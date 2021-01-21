@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { GoogleMap, useJsApiLoader } from "@react-google-maps/api";
-import { generateRandomBearingInRadians, getRandomLatLonWithDistance } from "../util";
+import { getRandomLatLonWithDistance } from "../util";
 
 const containerStyle = {
   width: "100%",
   height: "100%",
-};
+}; //  display: "flex",
 
 const Map = () => {
   const [position, setPosition] = useState({ lat: 0, long: 0 });
+
+  const [map, setMap] = React.useState(null);
 
   useEffect(() => {
     if ("geolocation" in navigator) {
@@ -25,13 +27,12 @@ const Map = () => {
     }
   }, []);
 
+
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
     googleMapsApiKey:
       process.env.API_KEY || "API_KEY",
   });
-
-  const [map, setMap] = React.useState(null);
 
   const onLoad = React.useCallback(function callback(map) {
     const bounds = new window.google.maps.LatLngBounds();
@@ -45,7 +46,7 @@ const Map = () => {
 
   const calculateNewCoords = () => {
     //@ts-ignore
-    const dist = document.getElementById('distance').value;
+    const dist = document.getElementById("distance").value;
     const result = getRandomLatLonWithDistance(
       position.lat,
       position.long,
@@ -64,25 +65,50 @@ const Map = () => {
           alignSelf: "center",
           justifyContent: "center",
           height: "100%",
+          width: "100%",
+          zIndex: 0,
         }}
       >
-        <div style={{ height: "800px", width: "800px" }}>
+        {/* For some reason this styling works */}
+        <div style={{ height: "100vh", width: "100%" }}>
           <GoogleMap
             mapContainerStyle={containerStyle}
             center={new google.maps.LatLng(position.lat, position.long)}
             zoom={12}
             onLoad={onLoad}
             onUnmount={onUnmount}
-          />
+          >
+            <div
+              id={"contentDiv"}
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+                zIndex: 100,
+                backgroundColor: "red",
+              }}
+            >
+              <form style={{ zIndex: 2 }}>
+                <label>Distance in m:</label>
+                <br />
+                <input type="number" id="distance" name="distance" />
+              </form>
+
+              <button
+                style={{
+                  margin: "10px",
+                  width: "200px",
+                  height: "50px",
+                  zIndex: 2,
+                }}
+                onClick={() => calculateNewCoords()}
+              >
+                Random
+              </button>
+            </div>
+          </GoogleMap>
         </div>
-      </div>
-      <div style ={{display: "flex", alignItems: "center", justifyContent: "center"}}>
-        <form>
-        <label >Distance in m:</label><br />
-        <input type="number" id="distance" name="distance" />
-        </form>
-        
-      <button style={{margin: "10px", width: "200px", height: "50px"}} onClick={() => calculateNewCoords()}>Random</button>
       </div>
     </>
   ) : (

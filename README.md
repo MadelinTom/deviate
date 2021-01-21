@@ -7,6 +7,6 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 ## Other potential names
 Inerro - "wander" in latin 
 
-badizo - "go, walk, run" in latin
+Badizo - "go, walk, run" in latin
 
-curro - "run, hurry, speed, haste" in latin
+Curro - "run, hurry, speed, haste" in lati
