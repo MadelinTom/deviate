@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { GoogleMap, useJsApiLoader } from "@react-google-maps/api";
 import { getRandomLatLonWithDistance } from "../util";
+import mapStyle from "../mapStyle.json";
 
 const containerStyle = {
   width: "100%",
@@ -15,8 +16,8 @@ const Map = () => {
   useEffect(() => {
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(function (position) {
-        console.log(position.coords.latitude);
-        console.log(position.coords.longitude);
+        console.log(position.coords.latitude)
+        console.log(position.coords.longitude)
         setPosition({
           lat: position.coords.latitude,
           long: position.coords.longitude,
@@ -25,8 +26,7 @@ const Map = () => {
     } else {
       console.log("This app requires your location");
     }
-  }, []);
-
+  }, [map]);
 
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
@@ -37,6 +37,8 @@ const Map = () => {
   const onLoad = React.useCallback(function callback(map) {
     const bounds = new window.google.maps.LatLngBounds();
     map.fitBounds(bounds);
+    map.setOptions({styles: mapStyle, zoom: 14})
+    map.setCenter(new google.maps.LatLng(position.lat, position.long));
     setMap(map);
   }, []);
 
@@ -74,7 +76,6 @@ const Map = () => {
           <GoogleMap
             mapContainerStyle={containerStyle}
             center={new google.maps.LatLng(position.lat, position.long)}
-            zoom={12}
             onLoad={onLoad}
             onUnmount={onUnmount}
           >
