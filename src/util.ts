@@ -39,9 +39,44 @@ export const getRandomLatLonWithDistance = (
 };
 
 export const generateRandomBearingInRadians = () => {
-    return randomIntFromInterval(0, 360);
+  return randomIntFromInterval(0, 360);
 };
 
-const randomIntFromInterval = (min: number, max: number) => { // min and max included 
-    return Math.floor(Math.random() * (max - min + 1) + min);
-  }
+const randomIntFromInterval = (min: number, max: number) => {
+  // min and max included
+  return Math.floor(Math.random() * (max - min + 1) + min);
+};
+
+export const generateRandomRoute = () => {
+  // divide distance by 3
+  // get random lat long with distance
+  // get 2 more random lat longs with distance
+  // getDirectionsServiceOptions with 2 waypoints
+};
+
+export const getDirectionsServiceOptions = (
+  currentLat: number,
+  currentLong: number,
+  newLat: number,
+  newLong: number
+) => {
+  let result = {
+    origin: new google.maps.LatLng(currentLat, currentLong),
+    destination: new google.maps.LatLng(newLat, newLong),
+    waypoints: [
+      {
+        location: "Joplin, MO",
+        stopover: false,
+      },
+      {
+        location: "Oklahoma City, OK",
+        stopover: true,
+      },
+    ],
+    provideRouteAlternatives: false,
+    travelMode: google.maps.TravelMode.WALKING,
+    unitSystem: google.maps.UnitSystem.IMPERIAL,
+  };
+
+  return result;
+};

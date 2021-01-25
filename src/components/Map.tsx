@@ -20,6 +20,26 @@ const Map = () => {
 
   const [map, setMap] = React.useState(null);
 
+  // const directionsServiceCallback = () => {};
+
+  // const test = new DirectionsService({callback: directionsServiceCallback, options: {
+  //   origin: new google.maps.LatLng(position.lat, position.long),
+  //   destination: new google.maps.LatLng(position.lat, position.long),
+  //   waypoints: [
+  //     {
+  //       location: 'Joplin, MO',
+  //       stopover: false
+  //     },{
+  //       location: 'Oklahoma City, OK',
+  //       stopover: true
+  //     }],
+  //   provideRouteAlternatives: false,
+  //   drivingOptions: {
+  //     departureTime: new Date(/* now, or future date */),
+  //   },
+  //   unitSystem: google.maps.UnitSystem.IMPERIAL
+  // }});
+
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
     googleMapsApiKey:
