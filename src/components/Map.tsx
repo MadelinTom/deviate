@@ -1,32 +1,24 @@
-import React, { useEffect, useState } from "react";
-import { GoogleMap, useJsApiLoader } from "@react-google-maps/api";
+import React, { useState } from "react";
+import {
+  GoogleMap,
+  useJsApiLoader,
+  DirectionsService,
+} from "@react-google-maps/api";
+
 import { getRandomLatLonWithDistance } from "../util";
 import mapStyle from "../mapStyle.json";
 
 const containerStyle = {
   width: "100%",
   height: "100%",
-}; //  display: "flex",
+  display: "flex",
+  "flex-direction": "column-reverse",
+};
 
 const Map = () => {
   const [position, setPosition] = useState({ lat: 0, long: 0 });
 
   const [map, setMap] = React.useState(null);
-
-  useEffect(() => {
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(function (position) {
-        console.log(position.coords.latitude)
-        console.log(position.coords.longitude)
-        setPosition({
-          lat: position.coords.latitude,
-          long: position.coords.longitude,
-        });
-      });
-    } else {
-      console.log("This app requires your location");
-    }
-  }, [map]);
 
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
@@ -37,8 +29,19 @@ const Map = () => {
   const onLoad = React.useCallback(function callback(map) {
     const bounds = new window.google.maps.LatLngBounds();
     map.fitBounds(bounds);
-    map.setOptions({styles: mapStyle, zoom: 14})
-    map.setCenter(new google.maps.LatLng(position.lat, position.long));
+    map.setOptions({ styles: mapStyle });
+
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(function (position) {
+        console.log(position.coords.latitude);
+        console.log(position.coords.longitude);
+        setPosition({
+          lat: position.coords.latitude,
+          long: position.coords.longitude,
+        });
+      });
+    }
+
     setMap(map);
   }, []);
 
@@ -48,7 +51,7 @@ const Map = () => {
 
   const calculateNewCoords = () => {
     //@ts-ignore
-    const dist = document.getElementById("distance").value;
+    const dist = document.getElementById("distance").value * 1000;
     const result = getRandomLatLonWithDistance(
       position.lat,
       position.long,
@@ -78,6 +81,7 @@ const Map = () => {
             center={new google.maps.LatLng(position.lat, position.long)}
             onLoad={onLoad}
             onUnmount={onUnmount}
+            zoom={14}
           >
             <div
               id={"contentDiv"}
@@ -86,27 +90,27 @@ const Map = () => {
                 flexDirection: "row",
                 alignItems: "center",
                 justifyContent: "center",
-                zIndex: 100,
-                backgroundColor: "red",
               }}
             >
-              <form style={{ zIndex: 2 }}>
-                <label>Distance in m:</label>
-                <br />
-                <input type="number" id="distance" name="distance" />
-              </form>
+              <div id={"form"} style={{display: "flex", flexDirection: "row", backgroundColor: "grey", borderRadius: "10px", alignItems: "center", opacity: "0.7", margin: "50px"}}>
+                <form style={{ zIndex: 2, margin: "10px" }}>
+                  <label>Distance in km:</label>
+                  <br />
+                  <input type="number" id="distance" name="distance" />
+                </form>
 
-              <button
-                style={{
-                  margin: "10px",
-                  width: "200px",
-                  height: "50px",
-                  zIndex: 2,
-                }}
-                onClick={() => calculateNewCoords()}
-              >
-                Random
-              </button>
+                <button
+                  style={{
+                    margin: "10px",
+                    width: "200px",
+                    height: "50px",
+                    zIndex: 2,
+                  }}
+                  onClick={() => calculateNewCoords()}
+                >
+                  Generate
+                </button>
+              </div>
             </div>
           </GoogleMap>
         </div>
