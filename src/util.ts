@@ -38,6 +38,9 @@ export const getRandomLatLonWithDistance = (
   return { lat: resultLat, long: resultLon };
 };
 
+/*
+    Generate a random bearing (0 - 360 degrees)
+*/
 export const generateRandomBearingInRadians = () => {
   return randomIntFromInterval(0, 360);
 };
@@ -47,33 +50,36 @@ const randomIntFromInterval = (min: number, max: number) => {
   return Math.floor(Math.random() * (max - min + 1) + min);
 };
 
-export const generateRandomRoute = () => {
-  // divide distance by 3
-  // get random lat long with distance
-  // get 2 more random lat longs with distance
-  // getDirectionsServiceOptions with 2 waypoints
-};
-
+/*
+    Build a directions query:
+      - From current position
+      - Generate 2 random waypoints 1/3 of distance away 
+      - Back to current position
+    Returns a loop roughly equal to distance
+*/
 export const getDirectionsServiceOptions = (
   currentLat: number,
   currentLong: number,
-  newLat: number,
-  newLong: number
+  distance: number,
 ) => {
+  const dist = distance / 3;
+
+  const firstRandomWaypoint = getRandomLatLonWithDistance(currentLat, currentLong, dist);
+  const secondRandomWaypoint = getRandomLatLonWithDistance(currentLat, currentLong, dist);
+
   let result = {
     origin: new google.maps.LatLng(currentLat, currentLong),
-    destination: new google.maps.LatLng(newLat, newLong),
+    destination: new google.maps.LatLng(currentLat, currentLong),
     waypoints: [
       {
-        location: "Joplin, MO",
+        location: new google.maps.LatLng(firstRandomWaypoint.lat, firstRandomWaypoint.long),
         stopover: false,
       },
       {
-        location: "Oklahoma City, OK",
-        stopover: true,
+        location: new google.maps.LatLng(secondRandomWaypoint.lat, secondRandomWaypoint.long),
+        stopover: false,
       },
     ],
-    provideRouteAlternatives: false,
     travelMode: google.maps.TravelMode.WALKING,
     unitSystem: google.maps.UnitSystem.IMPERIAL,
   };

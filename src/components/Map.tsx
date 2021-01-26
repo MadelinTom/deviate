@@ -2,43 +2,27 @@ import React, { useState } from "react";
 import {
   GoogleMap,
   useJsApiLoader,
-  DirectionsService,
+  DirectionsRenderer,
 } from "@react-google-maps/api";
 
-import { getRandomLatLonWithDistance } from "../util";
+import { getDirectionsServiceOptions } from "../util";
 import mapStyle from "../mapStyle.json";
 
 const containerStyle = {
   width: "100%",
   height: "100%",
   display: "flex",
+  "justify-content": "space-between",
   "flex-direction": "column-reverse",
 };
 
 const Map = () => {
   const [position, setPosition] = useState({ lat: 0, long: 0 });
+  const [directionsResult, setDirectionsResult] = useState(null);
+  const [runDistance, setRunDistance] = useState(null);
 
   const [map, setMap] = React.useState(null);
-
-  // const directionsServiceCallback = () => {};
-
-  // const test = new DirectionsService({callback: directionsServiceCallback, options: {
-  //   origin: new google.maps.LatLng(position.lat, position.long),
-  //   destination: new google.maps.LatLng(position.lat, position.long),
-  //   waypoints: [
-  //     {
-  //       location: 'Joplin, MO',
-  //       stopover: false
-  //     },{
-  //       location: 'Oklahoma City, OK',
-  //       stopover: true
-  //     }],
-  //   provideRouteAlternatives: false,
-  //   drivingOptions: {
-  //     departureTime: new Date(/* now, or future date */),
-  //   },
-  //   unitSystem: google.maps.UnitSystem.IMPERIAL
-  // }});
+  let directionsService: any;
 
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
@@ -46,10 +30,20 @@ const Map = () => {
       process.env.API_KEY || "API_KEY",
   });
 
+  const directionsServiceCallback = (result: any, status: any) => {
+    if (status == "OK") {
+      console.log("dist: ", result.routes[0].legs[0].distance);
+      setRunDistance(result.routes[0].legs[0].distance);
+      setDirectionsResult(result);
+    } else {
+      console.log("directionsServiceCallback", result, status);
+    }
+  };
+
   const onLoad = React.useCallback(function callback(map) {
     const bounds = new window.google.maps.LatLngBounds();
     map.fitBounds(bounds);
-    map.setOptions({ styles: mapStyle });
+    map.setOptions({ styles: mapStyle, disableDefaultUI: true, zoom: 14 });
 
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(function (position) {
@@ -72,14 +66,19 @@ const Map = () => {
   const calculateNewCoords = () => {
     //@ts-ignore
     const dist = document.getElementById("distance").value * 1000;
-    const result = getRandomLatLonWithDistance(
+
+    const directionsServiceOptions = getDirectionsServiceOptions(
       position.lat,
       position.long,
       dist || 5000
     );
 
-    console.log(result);
-    setPosition(result);
+    directionsService = new google.maps.DirectionsService();
+
+    directionsService.route(
+      directionsServiceOptions,
+      (result: any, status: any) => directionsServiceCallback(result, status)
+    );
   };
 
   return isLoaded ? (
@@ -103,6 +102,7 @@ const Map = () => {
             onUnmount={onUnmount}
             zoom={14}
           >
+            {/* DISTANCE AND GENERATE BUTTON */}
             <div
               id={"contentDiv"}
               style={{
@@ -112,7 +112,18 @@ const Map = () => {
                 justifyContent: "center",
               }}
             >
-              <div id={"form"} style={{display: "flex", flexDirection: "row", backgroundColor: "grey", borderRadius: "10px", alignItems: "center", opacity: "0.7", margin: "50px"}}>
+              <div
+                id={"form"}
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  backgroundColor: "grey",
+                  borderRadius: "10px",
+                  alignItems: "center",
+                  opacity: "0.7",
+                  margin: "50px",
+                }}
+              >
                 <form style={{ zIndex: 2, margin: "10px" }}>
                   <label>Distance in km:</label>
                   <br />
@@ -132,6 +143,39 @@ const Map = () => {
                 </button>
               </div>
             </div>
+
+            {/* RUN DISTANCE */}
+            {runDistance !== null ? (
+              <div
+                id={"distance"}
+                style={{
+                  backgroundColor: "grey",
+                  display: "flex",
+                  borderRadius: "10px",
+                  alignItems: "center",
+                  alignSelf: "center",
+                  opacity: "0.7",
+                  height: "50px",
+                  margin: "30px",
+                }}
+              >
+
+                <p style={{margin: "10px", alignSelf: "center"}}>
+                {/* @ts-ignore */}
+                  {`${runDistance.text} | ${runDistance.value.toFixed(1) / 1000} km`}
+                </p>
+              </div>
+            ) : null}
+
+            {/* DIRECTIONS */}
+            {directionsResult !== null ? (
+              <DirectionsRenderer
+                // required
+                options={{
+                  directions: directionsResult || undefined,
+                }}
+              />
+            ) : null}
           </GoogleMap>
         </div>
       </div>
