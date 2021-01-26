@@ -48,9 +48,9 @@ const randomIntFromInterval = (min: number, max: number) => {
 };
 
 export const getDirectionsServiceOptions = (
-  distance: number,
   currentLat: number,
   currentLong: number,
+  distance: number,
 ) => {
   const dist = distance; // / 3;
 
@@ -59,20 +59,20 @@ export const getDirectionsServiceOptions = (
   const destinationWaypoint = getRandomLatLonWithDistance(currentLat, currentLong, dist);
 
   let result = {
-    origin: 'Chicago, IL', //new google.maps.LatLng(currentLat, currentLong),
-    destination:'Los Angeles, CA', // new google.maps.LatLng(destinationWaypoint.lat, destinationWaypoint.long),
-    // waypoints: [
-    //   {
-    //     location: new google.maps.LatLng(firstRandomWaypoint.lat, firstRandomWaypoint.long),
-    //     stopover: false,
-    //   },
-    //   {
-    //     location: new google.maps.LatLng(secondRandomWaypoint.lat, secondRandomWaypoint.long),
-    //     stopover: false,
-    //   },
-    // ],
+    origin: new google.maps.LatLng(currentLat, currentLong),
+    destination: new google.maps.LatLng(currentLat, currentLong),
+    waypoints: [
+      {
+        location: new google.maps.LatLng(firstRandomWaypoint.lat, firstRandomWaypoint.long),
+        stopover: false,
+      },
+      {
+        location: new google.maps.LatLng(secondRandomWaypoint.lat, secondRandomWaypoint.long),
+        stopover: false,
+      },
+    ],
     // provideRouteAlternatives: true,
-    travelMode: google.maps.TravelMode.DRIVING,
+    travelMode: google.maps.TravelMode.WALKING,
     unitSystem: google.maps.UnitSystem.IMPERIAL,
   };
 

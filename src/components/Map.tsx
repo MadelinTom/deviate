@@ -1,15 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   GoogleMap,
   useJsApiLoader,
-  DirectionsService,
   DirectionsRenderer,
 } from "@react-google-maps/api";
 
-import {
-  getDirectionsServiceOptions,
-  getRandomLatLonWithDistance,
-} from "../util";
+import { getDirectionsServiceOptions } from "../util";
 import mapStyle from "../mapStyle.json";
 
 const containerStyle = {
@@ -21,8 +17,7 @@ const containerStyle = {
 
 const Map = () => {
   const [position, setPosition] = useState({ lat: 0, long: 0 });
-  const [result, setResult] = useState(null);
-  const [destination, setDestination] = useState(null);
+  const [directionsResult, setDirectionsResult] = useState(null);
 
   const [map, setMap] = React.useState(null);
   let directionsService: any;
@@ -34,10 +29,10 @@ const Map = () => {
   });
 
   const directionsServiceCallback = (result: any, status: any) => {
-    console.log("directionsServiceCallback", result, status);
-
     if (status == "OK") {
-      setResult(result);
+      setDirectionsResult(result);
+    } else {
+      console.log("directionsServiceCallback", result, status);
     }
   };
 
@@ -68,7 +63,7 @@ const Map = () => {
     //@ts-ignore
     const dist = document.getElementById("distance").value * 1000;
 
-    const temp = getDirectionsServiceOptions(
+    const directionsServiceOptions = getDirectionsServiceOptions(
       position.lat,
       position.long,
       dist || 5000
@@ -76,11 +71,11 @@ const Map = () => {
 
     directionsService = new google.maps.DirectionsService();
 
-    directionsService.route(temp, (result: any, status: any) =>
+    directionsService.route(directionsServiceOptions, (result: any, status: any) =>
       directionsServiceCallback(result, status)
     );
 
-    console.log("DIRECTION SERVICE", directionsService, temp);
+    console.log("DIRECTION SERVICE", directionsService, directionsServiceOptions);
   };
 
   return isLoaded ? (
@@ -145,39 +140,11 @@ const Map = () => {
               </div>
             </div>
 
-            {destination !== null ? (
-              <DirectionsService
-                // required
-                options={{
-                  destination: "Los Angeles, CA",
-                  origin: "Chicago, IL",
-                  travelMode: google.maps.TravelMode.DRIVING,
-                }}
-                // required
-                callback={directionsServiceCallback}
-                // optional
-                onLoad={(directionsService) => {
-                  console.log(
-                    "DirectionsService onLoad directionsService: ",
-                    directionsService
-                  );
-                }}
-                // optional
-                onUnmount={(directionsService) => {
-                  console.log(
-                    "DirectionsService onUnmount directionsService: ",
-                    directionsService
-                  );
-                }}
-              />
-
-            ) : (null)}
-
-            {result !== null ? (
+            {directionsResult !== null ? (
               <DirectionsRenderer
                 // required
                 options={{
-                  directions: result || undefined,
+                  directions: directionsResult || undefined,
                 }}
                 // optional
                 onLoad={(directionsRenderer) => {
