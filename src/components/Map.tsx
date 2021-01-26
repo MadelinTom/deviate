@@ -1,11 +1,15 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   GoogleMap,
   useJsApiLoader,
   DirectionsService,
+  DirectionsRenderer,
 } from "@react-google-maps/api";
 
-import { getRandomLatLonWithDistance } from "../util";
+import {
+  getDirectionsServiceOptions,
+  getRandomLatLonWithDistance,
+} from "../util";
 import mapStyle from "../mapStyle.json";
 
 const containerStyle = {
@@ -19,26 +23,8 @@ const Map = () => {
   const [position, setPosition] = useState({ lat: 0, long: 0 });
 
   const [map, setMap] = React.useState(null);
-
-  // const directionsServiceCallback = () => {};
-
-  // const test = new DirectionsService({callback: directionsServiceCallback, options: {
-  //   origin: new google.maps.LatLng(position.lat, position.long),
-  //   destination: new google.maps.LatLng(position.lat, position.long),
-  //   waypoints: [
-  //     {
-  //       location: 'Joplin, MO',
-  //       stopover: false
-  //     },{
-  //       location: 'Oklahoma City, OK',
-  //       stopover: true
-  //     }],
-  //   provideRouteAlternatives: false,
-  //   drivingOptions: {
-  //     departureTime: new Date(/* now, or future date */),
-  //   },
-  //   unitSystem: google.maps.UnitSystem.IMPERIAL
-  // }});
+  let directionsService: any;
+  let directionsRenderer: any;
 
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
@@ -46,7 +32,23 @@ const Map = () => {
       process.env.API_KEY || "API_KEY",
   });
 
+  // useEffect(() => {
+  //   if (isLoaded) {
+  //     // directionsRenderer = new google.maps.DirectionsRenderer();
+  //     directionsService = new google.maps.DirectionsService();
+  //   }
+  // }, [isLoaded]);
+
+  const directionsServiceCallback = (result: any, status: any) => {
+    console.log("directionsServiceCallback", result, status);
+
+    // if (status == "OK") {
+    //   directionsRenderer.setDirections(result);
+    // }
+  };
+
   const onLoad = React.useCallback(function callback(map) {
+
     const bounds = new window.google.maps.LatLngBounds();
     map.fitBounds(bounds);
     map.setOptions({ styles: mapStyle });
@@ -63,6 +65,7 @@ const Map = () => {
     }
 
     setMap(map);
+    // directionsRenderer.setMap(map);
   }, []);
 
   const onUnmount = React.useCallback(function callback(map) {
@@ -72,14 +75,21 @@ const Map = () => {
   const calculateNewCoords = () => {
     //@ts-ignore
     const dist = document.getElementById("distance").value * 1000;
-    const result = getRandomLatLonWithDistance(
+
+    const temp = getDirectionsServiceOptions(
       position.lat,
       position.long,
       dist || 5000
     );
 
-    console.log(result);
-    setPosition(result);
+    directionsService = new google.maps.DirectionsService();
+
+    directionsService.route(temp, (result: any, status: any) =>
+      directionsServiceCallback(result, status)
+    );
+    
+
+    console.log("DIRECTION SERVICE", directionsService, temp);
   };
 
   return isLoaded ? (
@@ -112,7 +122,18 @@ const Map = () => {
                 justifyContent: "center",
               }}
             >
-              <div id={"form"} style={{display: "flex", flexDirection: "row", backgroundColor: "grey", borderRadius: "10px", alignItems: "center", opacity: "0.7", margin: "50px"}}>
+              <div
+                id={"form"}
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  backgroundColor: "grey",
+                  borderRadius: "10px",
+                  alignItems: "center",
+                  opacity: "0.7",
+                  margin: "50px",
+                }}
+              >
                 <form style={{ zIndex: 2, margin: "10px" }}>
                   <label>Distance in km:</label>
                   <br />
@@ -142,3 +163,50 @@ const Map = () => {
 };
 
 export default React.memo(Map);
+
+/*
+{
+              (
+                this.state.destination !== '' &&
+                this.state.origin !== ''
+              ) && (
+                <DirectionsService
+                  // required
+                  options={{ // eslint-disable-line react-perf/jsx-no-new-object-as-prop
+                    destination: this.state.destination,
+                    origin: this.state.origin,
+                    travelMode: this.state.travelMode
+                  }}
+                  // required
+                  callback={this.directionsCallback}
+                  // optional
+                  onLoad={directionsService => {
+                    console.log('DirectionsService onLoad directionsService: ', directionsService)
+                  }}
+                  // optional
+                  onUnmount={directionsService => {
+                    console.log('DirectionsService onUnmount directionsService: ', directionsService)
+                  }}
+                />
+              )
+            }
+
+            {
+              this.state.response !== null && (
+                <DirectionsRenderer
+                  // required
+                  options={{ // eslint-disable-line react-perf/jsx-no-new-object-as-prop
+                    directions: this.state.response
+                  }}
+                  // optional
+                  onLoad={directionsRenderer => {
+                    console.log('DirectionsRenderer onLoad directionsRenderer: ', directionsRenderer)
+                  }}
+                  // optional
+                  onUnmount={directionsRenderer => {
+                    console.log('DirectionsRenderer onUnmount directionsRenderer: ', directionsRenderer)
+                  }}
+                />
+              )
+            }
+            */

@@ -47,34 +47,32 @@ const randomIntFromInterval = (min: number, max: number) => {
   return Math.floor(Math.random() * (max - min + 1) + min);
 };
 
-export const generateRandomRoute = () => {
-  // divide distance by 3
-  // get random lat long with distance
-  // get 2 more random lat longs with distance
-  // getDirectionsServiceOptions with 2 waypoints
-};
-
 export const getDirectionsServiceOptions = (
+  distance: number,
   currentLat: number,
   currentLong: number,
-  newLat: number,
-  newLong: number
 ) => {
+  const dist = distance; // / 3;
+
+  const firstRandomWaypoint = getRandomLatLonWithDistance(currentLat, currentLong, dist);
+  const secondRandomWaypoint = getRandomLatLonWithDistance(currentLat, currentLong, dist);
+  const destinationWaypoint = getRandomLatLonWithDistance(currentLat, currentLong, dist);
+
   let result = {
-    origin: new google.maps.LatLng(currentLat, currentLong),
-    destination: new google.maps.LatLng(newLat, newLong),
-    waypoints: [
-      {
-        location: "Joplin, MO",
-        stopover: false,
-      },
-      {
-        location: "Oklahoma City, OK",
-        stopover: true,
-      },
-    ],
-    provideRouteAlternatives: false,
-    travelMode: google.maps.TravelMode.WALKING,
+    origin: 'Chicago, IL', //new google.maps.LatLng(currentLat, currentLong),
+    destination:'Los Angeles, CA', // new google.maps.LatLng(destinationWaypoint.lat, destinationWaypoint.long),
+    // waypoints: [
+    //   {
+    //     location: new google.maps.LatLng(firstRandomWaypoint.lat, firstRandomWaypoint.long),
+    //     stopover: false,
+    //   },
+    //   {
+    //     location: new google.maps.LatLng(secondRandomWaypoint.lat, secondRandomWaypoint.long),
+    //     stopover: false,
+    //   },
+    // ],
+    // provideRouteAlternatives: true,
+    travelMode: google.maps.TravelMode.DRIVING,
     unitSystem: google.maps.UnitSystem.IMPERIAL,
   };
 
