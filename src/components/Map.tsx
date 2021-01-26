@@ -12,12 +12,14 @@ const containerStyle = {
   width: "100%",
   height: "100%",
   display: "flex",
+  "justify-content": "space-between",
   "flex-direction": "column-reverse",
 };
 
 const Map = () => {
   const [position, setPosition] = useState({ lat: 0, long: 0 });
   const [directionsResult, setDirectionsResult] = useState(null);
+  const [runDistance, setRunDistance] = useState(null);
 
   const [map, setMap] = React.useState(null);
   let directionsService: any;
@@ -30,6 +32,8 @@ const Map = () => {
 
   const directionsServiceCallback = (result: any, status: any) => {
     if (status == "OK") {
+      console.log("dist: ", result.routes[0].legs[0].distance);
+      setRunDistance(result.routes[0].legs[0].distance);
       setDirectionsResult(result);
     } else {
       console.log("directionsServiceCallback", result, status);
@@ -39,7 +43,7 @@ const Map = () => {
   const onLoad = React.useCallback(function callback(map) {
     const bounds = new window.google.maps.LatLngBounds();
     map.fitBounds(bounds);
-    map.setOptions({ styles: mapStyle });
+    map.setOptions({ styles: mapStyle, disableDefaultUI: true, zoom: 14 });
 
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(function (position) {
@@ -71,11 +75,10 @@ const Map = () => {
 
     directionsService = new google.maps.DirectionsService();
 
-    directionsService.route(directionsServiceOptions, (result: any, status: any) =>
-      directionsServiceCallback(result, status)
+    directionsService.route(
+      directionsServiceOptions,
+      (result: any, status: any) => directionsServiceCallback(result, status)
     );
-
-    console.log("DIRECTION SERVICE", directionsService, directionsServiceOptions);
   };
 
   return isLoaded ? (
@@ -99,6 +102,7 @@ const Map = () => {
             onUnmount={onUnmount}
             zoom={14}
           >
+            {/* DISTANCE AND GENERATE BUTTON */}
             <div
               id={"contentDiv"}
               style={{
@@ -140,25 +144,35 @@ const Map = () => {
               </div>
             </div>
 
+            {/* RUN DISTANCE */}
+            {runDistance !== null ? (
+              <div
+                id={"distance"}
+                style={{
+                  backgroundColor: "grey",
+                  display: "flex",
+                  borderRadius: "10px",
+                  alignItems: "center",
+                  alignSelf: "center",
+                  opacity: "0.7",
+                  height: "50px",
+                  margin: "30px",
+                }}
+              >
+
+                <p style={{margin: "10px", alignSelf: "center"}}>
+                {/* @ts-ignore */}
+                  {`${runDistance.text} | ${runDistance.value.toFixed(1) / 1000} km`}
+                </p>
+              </div>
+            ) : null}
+
+            {/* DIRECTIONS */}
             {directionsResult !== null ? (
               <DirectionsRenderer
                 // required
                 options={{
                   directions: directionsResult || undefined,
-                }}
-                // optional
-                onLoad={(directionsRenderer) => {
-                  console.log(
-                    "DirectionsRenderer onLoad directionsRenderer: ",
-                    directionsRenderer
-                  );
-                }}
-                // optional
-                onUnmount={(directionsRenderer) => {
-                  console.log(
-                    "DirectionsRenderer onUnmount directionsRenderer: ",
-                    directionsRenderer
-                  );
                 }}
               />
             ) : null}
