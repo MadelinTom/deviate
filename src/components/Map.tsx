@@ -20,6 +20,8 @@ const Map = () => {
   const [position, setPosition] = useState({ lat: 0, long: 0 });
   const [directionsResult, setDirectionsResult] = useState(null);
   const [runDistance, setRunDistance] = useState(null);
+  const [directionsRenderer, setDirectionsRenderer] = useState();
+  const [hasNotDragged, setHasNotDragged] = useState(false);
 
   const [map, setMap] = React.useState(null);
   let directionsService: any;
@@ -30,7 +32,9 @@ const Map = () => {
       process.env.API_KEY || "API_KEY",
   });
 
+  // THIS IS CALLED ONCE ON CLICK GENERATE
   const directionsServiceCallback = (result: any, status: any) => {
+    console.log("directions change handler");
     if (status == "OK") {
       console.log("dist: ", result.routes[0].legs[0].distance);
       setRunDistance(result.routes[0].legs[0].distance);
@@ -81,6 +85,33 @@ const Map = () => {
     );
   };
 
+  function computeTotalDistance(result: google.maps.DirectionsResult) {
+    let total = 0;
+    let textValue = result.routes[0].legs[0].distance; // assumes only 1 leg
+    const myroute = result.routes[0];
+
+    for (let i = 0; i < myroute.legs.length; i++) {
+      total += myroute.legs[i].distance.value;
+    }
+    total = total / 1000;
+
+    // THIS CAUSES INFINATE LOOP
+    //@ts-ignore
+    // setRunDistance({ text: textValue, value: total });
+    console.log(textValue, total);
+  }
+
+  const directionsChangedHandler = () => {
+    console.log("DIRECTIONS CHANGED!!!");
+
+    console.log(directionsRenderer);
+
+    if (directionsRenderer && hasNotDragged) {
+      // @ts-ignore
+      computeTotalDistance(directionsRenderer.getDirections());
+    }
+  };
+
   return isLoaded ? (
     <>
       <div
@@ -115,7 +146,7 @@ const Map = () => {
               <div
                 id={"form"}
                 style={{
-                  background: "rgba(160, 158, 151, 0.8)",
+                  background: "rgba(160, 158, 151, 0.85)",
                   zIndex: 1,
                   display: "flex",
                   flexDirection: "row",
@@ -149,7 +180,7 @@ const Map = () => {
               <div
                 id={"distance"}
                 style={{
-                  background: "rgba(160, 158, 151, 0.8)",
+                  background: "rgba(160, 158, 151, 0.85)",
                   zIndex: 1,
                   display: "flex",
                   borderRadius: "10px",
@@ -159,10 +190,11 @@ const Map = () => {
                   margin: "30px",
                 }}
               >
-
-                <p style={{margin: "10px", alignSelf: "center"}}>
-                {/* @ts-ignore */}
-                  {`${runDistance.text} | ${(runDistance.value / 1000).toFixed(1)} km`}
+                <p style={{ margin: "10px", alignSelf: "center" }}>
+                  {/* @ts-ignore */}
+                  {`${runDistance.text} | ${(runDistance.value / 1000).toFixed(
+                    1
+                  )} km`}
                 </p>
               </div>
             ) : null}
@@ -173,7 +205,17 @@ const Map = () => {
                 // required
                 options={{
                   directions: directionsResult || undefined,
+                  draggable: true,
                 }}
+                onLoad={(directionsRenderer) => {
+                  console.log(
+                    "DirectionsRenderer onLoad directionsRenderer: ",
+                    directionsRenderer
+                  );
+                  //@ts-ignore
+                  setDirectionsRenderer(directionsRenderer);
+                }}
+                onDirectionsChanged={() => directionsChangedHandler()}
               />
             ) : null}
           </GoogleMap>
