@@ -115,16 +115,16 @@ const Map = () => {
               <div
                 id={"form"}
                 style={{
+                  background: "rgba(160, 158, 151, 0.8)",
+                  zIndex: 1,
                   display: "flex",
                   flexDirection: "row",
-                  backgroundColor: "grey",
                   borderRadius: "10px",
                   alignItems: "center",
-                  opacity: "0.7",
                   margin: "50px",
                 }}
               >
-                <form style={{ zIndex: 2, margin: "10px" }}>
+                <form style={{ zIndex: 2, margin: "10px", minWidth: "70px" }}>
                   <label>Distance in km:</label>
                   <br />
                   <input type="number" id="distance" name="distance" />
@@ -133,7 +133,7 @@ const Map = () => {
                 <button
                   style={{
                     margin: "10px",
-                    width: "200px",
+                    minWidth: "150px",
                     height: "50px",
                     zIndex: 2,
                   }}
@@ -149,12 +149,12 @@ const Map = () => {
               <div
                 id={"distance"}
                 style={{
-                  backgroundColor: "grey",
+                  background: "rgba(160, 158, 151, 0.8)",
+                  zIndex: 1,
                   display: "flex",
                   borderRadius: "10px",
                   alignItems: "center",
                   alignSelf: "center",
-                  opacity: "0.7",
                   height: "50px",
                   margin: "30px",
                 }}
@@ -162,7 +162,7 @@ const Map = () => {
 
                 <p style={{margin: "10px", alignSelf: "center"}}>
                 {/* @ts-ignore */}
-                  {`${runDistance.text} | ${runDistance.value.toFixed(1) / 1000} km`}
+                  {`${runDistance.text} | ${(runDistance.value / 1000).toFixed(1)} km`}
                 </p>
               </div>
             ) : null}
