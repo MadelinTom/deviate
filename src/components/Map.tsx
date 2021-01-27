@@ -41,9 +41,7 @@ const Map = () => {
   };
 
   const onLoad = React.useCallback(function callback(map) {
-    const bounds = new window.google.maps.LatLngBounds();
-    map.fitBounds(bounds);
-    map.setOptions({ styles: mapStyle, disableDefaultUI: true, zoom: 14 });
+    map.setOptions({ styles: mapStyle, disableDefaultUI: true });
 
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(function (position) {
@@ -173,6 +171,7 @@ const Map = () => {
                 // required
                 options={{
                   directions: directionsResult || undefined,
+                  draggable: true,
                 }}
               />
             ) : null}
