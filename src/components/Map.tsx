@@ -5,6 +5,8 @@ import {
   DirectionsRenderer,
 } from "@react-google-maps/api";
 
+import { DistanceTab } from "./DistanceTab";
+import {GenerateTab} from "./GenerateTab";
 import { getDirectionsServiceOptions } from "../util";
 import mapStyle from "../mapStyle.json";
 
@@ -61,10 +63,7 @@ const Map = () => {
     setMap(null);
   }, []);
 
-  const calculateNewCoords = () => {
-    //@ts-ignore
-    const dist = document.getElementById("distance").value * 1000;
-
+  const calculateNewCoords = (dist: number ) => {
     const directionsServiceOptions = getDirectionsServiceOptions(
       position.lat,
       position.long,
@@ -101,68 +100,11 @@ const Map = () => {
             zoom={14}
           >
             {/* DISTANCE AND GENERATE BUTTON */}
-            <div
-              id={"contentDiv"}
-              style={{
-                display: "flex",
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <div
-                id={"form"}
-                style={{
-                  background: "rgba(160, 158, 151, 0.8)",
-                  zIndex: 1,
-                  display: "flex",
-                  flexDirection: "row",
-                  borderRadius: "10px",
-                  alignItems: "center",
-                  margin: "50px",
-                }}
-              >
-                <form style={{ zIndex: 2, margin: "10px", minWidth: "70px" }}>
-                  <label>Distance in km:</label>
-                  <br />
-                  <input type="number" id="distance" name="distance" />
-                </form>
+            <GenerateTab onClick={calculateNewCoords} />
 
-                <button
-                  style={{
-                    margin: "10px",
-                    minWidth: "150px",
-                    height: "50px",
-                    zIndex: 2,
-                  }}
-                  onClick={() => calculateNewCoords()}
-                >
-                  Generate
-                </button>
-              </div>
-            </div>
-
-            {/* RUN DISTANCE */}
+            {/* ROUTE DISTANCE */}
             {runDistance !== null ? (
-              <div
-                id={"distance"}
-                style={{
-                  background: "rgba(160, 158, 151, 0.8)",
-                  zIndex: 1,
-                  display: "flex",
-                  borderRadius: "10px",
-                  alignItems: "center",
-                  alignSelf: "center",
-                  height: "50px",
-                  margin: "30px",
-                }}
-              >
-
-                <p style={{margin: "10px", alignSelf: "center"}}>
-                {/* @ts-ignore */}
-                  {`${runDistance.text} | ${(runDistance.value / 1000).toFixed(1)} km`}
-                </p>
-              </div>
+              <DistanceTab distance={runDistance} />
             ) : null}
 
             {/* DIRECTIONS */}
