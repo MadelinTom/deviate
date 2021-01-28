@@ -1,10 +1,8 @@
-import React, { useState } from "react";
-import {
-  GoogleMap,
-  useJsApiLoader,
-  DirectionsRenderer,
-} from "@react-google-maps/api";
+import React, { useEffect, useRef, useState } from "react";
+import { GoogleMap, useJsApiLoader } from "@react-google-maps/api";
 
+import { DistanceTab } from "./DistanceTab";
+import { GenerateTab } from "./GenerateTab";
 import { getDirectionsServiceOptions } from "../util";
 import mapStyle from "../mapStyle.json";
 
@@ -18,11 +16,11 @@ const containerStyle = {
 
 const Map = () => {
   const [position, setPosition] = useState({ lat: 0, long: 0 });
-  const [directionsResult, setDirectionsResult] = useState(null);
   const [runDistance, setRunDistance] = useState(null);
-
   const [map, setMap] = React.useState(null);
-  let directionsService: any;
+
+  const directionsService = useRef();
+  const directionsRenderer = useRef();
 
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
@@ -30,11 +28,31 @@ const Map = () => {
       process.env.API_KEY || "API_KEY",
   });
 
+  useEffect(() => {
+    if (isLoaded) {
+      //@ts-ignore
+      directionsService.current = new google.maps.DirectionsService();
+      //@ts-ignore
+      directionsRenderer.current = new google.maps.DirectionsRenderer({
+        draggable: true,
+      });
+
+      //@ts-ignore
+      directionsRenderer.current.addListener("directions_changed", () => {
+        //@ts-ignore
+        computeTotalDistanceFromDirectionsResult(directionsRenderer.current.getDirections()
+        );
+      });
+    }
+  }, [isLoaded]);
+
   const directionsServiceCallback = (result: any, status: any) => {
     if (status == "OK") {
       console.log("dist: ", result.routes[0].legs[0].distance);
       setRunDistance(result.routes[0].legs[0].distance);
-      setDirectionsResult(result);
+
+      //@ts-ignore
+      directionsRenderer.current.setDirections(result);
     } else {
       console.log("directionsServiceCallback", result, status);
     }
@@ -54,6 +72,9 @@ const Map = () => {
       });
     }
 
+    //@ts-ignore
+    directionsRenderer.current.setMap(map);
+
     setMap(map);
   }, []);
 
@@ -61,22 +82,34 @@ const Map = () => {
     setMap(null);
   }, []);
 
-  const calculateNewCoords = () => {
-    //@ts-ignore
-    const dist = document.getElementById("distance").value * 1000;
-
+  const calculateNewCoords = (dist: number) => {
     const directionsServiceOptions = getDirectionsServiceOptions(
       position.lat,
       position.long,
       dist || 5000
     );
 
-    directionsService = new google.maps.DirectionsService();
-
-    directionsService.route(
+    //@ts-ignore
+    directionsService.current.route(
       directionsServiceOptions,
       (result: any, status: any) => directionsServiceCallback(result, status)
     );
+  };
+
+  const computeTotalDistanceFromDirectionsResult = (
+    result: google.maps.DirectionsResult
+  ) => {
+    let total = 0;
+    let textValue = result.routes[0].legs[0].distance; // assumes only 1 leg
+    const myroute = result.routes[0];
+
+    for (let i = 0; i < myroute.legs.length; i++) {
+      total += myroute.legs[i].distance.value;
+    }
+    total = total / 1000;
+
+    //@ts-ignore
+    setRunDistance({ text: textValue.text, value: textValue.value });
   };
 
   return isLoaded ? (
@@ -101,79 +134,11 @@ const Map = () => {
             zoom={14}
           >
             {/* DISTANCE AND GENERATE BUTTON */}
-            <div
-              id={"contentDiv"}
-              style={{
-                display: "flex",
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <div
-                id={"form"}
-                style={{
-                  background: "rgba(160, 158, 151, 0.8)",
-                  zIndex: 1,
-                  display: "flex",
-                  flexDirection: "row",
-                  borderRadius: "10px",
-                  alignItems: "center",
-                  margin: "50px",
-                }}
-              >
-                <form style={{ zIndex: 2, margin: "10px", minWidth: "70px" }}>
-                  <label>Distance in km:</label>
-                  <br />
-                  <input type="number" id="distance" name="distance" />
-                </form>
+            <GenerateTab onClick={calculateNewCoords} />
 
-                <button
-                  style={{
-                    margin: "10px",
-                    minWidth: "150px",
-                    height: "50px",
-                    zIndex: 2,
-                  }}
-                  onClick={() => calculateNewCoords()}
-                >
-                  Generate
-                </button>
-              </div>
-            </div>
-
-            {/* RUN DISTANCE */}
+            {/* ROUTE DISTANCE */}
             {runDistance !== null ? (
-              <div
-                id={"distance"}
-                style={{
-                  background: "rgba(160, 158, 151, 0.8)",
-                  zIndex: 1,
-                  display: "flex",
-                  borderRadius: "10px",
-                  alignItems: "center",
-                  alignSelf: "center",
-                  height: "50px",
-                  margin: "30px",
-                }}
-              >
-
-                <p style={{margin: "10px", alignSelf: "center"}}>
-                {/* @ts-ignore */}
-                  {`${runDistance.text} | ${(runDistance.value / 1000).toFixed(1)} km`}
-                </p>
-              </div>
-            ) : null}
-
-            {/* DIRECTIONS */}
-            {directionsResult !== null ? (
-              <DirectionsRenderer
-                // required
-                options={{
-                  directions: directionsResult || undefined,
-                  draggable: true,
-                }}
-              />
+              <DistanceTab distance={runDistance} />
             ) : null}
           </GoogleMap>
         </div>
