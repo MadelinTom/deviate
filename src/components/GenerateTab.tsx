@@ -25,7 +25,7 @@ export const GenerateTab = ({onClick}: any) => {
           margin: "50px",
         }}
       >
-        <form style={{ zIndex: 2, margin: "10px", minWidth: "70px" }}>
+        <form style={{ zIndex: 2, margin: "10px", minWidth: "70px",  }}>
           <label>Distance in km:</label>
           <br />
           <input
@@ -41,6 +41,7 @@ export const GenerateTab = ({onClick}: any) => {
             margin: "10px",
             minWidth: "150px",
             height: "50px",
+            borderRadius: "10px",
             zIndex: 2,
           }}
           onClick={() => onClick(input)}

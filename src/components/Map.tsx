@@ -14,33 +14,39 @@ const containerStyle = {
   "flex-direction": "column-reverse",
 };
 
-const Map = () => {
-  const [position, setPosition] = useState({ lat: 0, long: 0 });
-  const [runDistance, setRunDistance] = useState(null);
-  const [map, setMap] = React.useState(null);
+interface RunDistance {
+  text: string;
+  value: number;
+}
 
-  const directionsService = useRef();
-  const directionsRenderer = useRef();
+interface Position {
+  lat: number;
+  long: number;
+}
+
+const Map = () => {
+  const [position, setPosition] = useState<Position>({ lat: 0, long: 0 });
+  const [runDistance, setRunDistance] = useState<RunDistance | null>(null);
+  const [map, setMap] = React.useState<google.maps.Map<Element> | null>(null);
+
+  const directionsService = useRef<google.maps.DirectionsService>();
+  const directionsRenderer = useRef<google.maps.DirectionsRenderer>();
 
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
-    googleMapsApiKey:
-      process.env.REACT_APP_API_KEY || "API_KEY",
+    googleMapsApiKey: process.env.REACT_APP_API_KEY || "API_KEY",
   });
 
   useEffect(() => {
     if (isLoaded) {
-      //@ts-ignore
       directionsService.current = new google.maps.DirectionsService();
-      //@ts-ignore
       directionsRenderer.current = new google.maps.DirectionsRenderer({
         draggable: true,
       });
 
-      //@ts-ignore
       directionsRenderer.current.addListener("directions_changed", () => {
-        //@ts-ignore
-        computeTotalDistanceFromDirectionsResult(directionsRenderer.current.getDirections()
+        computeTotalDistanceFromDirectionsResult(
+          directionsRenderer.current!.getDirections()
         );
       });
     }
@@ -49,8 +55,13 @@ const Map = () => {
   /*
     Map setup and teardown callbacks
   */
-  const onLoad = React.useCallback(function callback(map) {
-    map.setOptions({ styles: mapStyle, disableDefaultUI: true });
+  const onLoad = React.useCallback(function callback(
+    map: google.maps.Map<Element>
+  ) {
+    map.setOptions({
+      styles: mapStyle,
+      disableDefaultUI: true,
+    } as google.maps.MapOptions);
 
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(function (position) {
@@ -63,11 +74,11 @@ const Map = () => {
       });
     }
 
-    //@ts-ignore
-    directionsRenderer.current.setMap(map);
+    directionsRenderer.current!.setMap(map);
 
     setMap(map);
-  }, []);
+  },
+  []);
 
   const onUnmount = React.useCallback(function callback(map) {
     setMap(null);
@@ -83,8 +94,7 @@ const Map = () => {
       dist || 5000
     );
 
-    //@ts-ignore
-    directionsService.current.route(
+    directionsService.current!.route(
       directionsServiceOptions,
       (result: any, status: any) => directionsServiceCallback(result, status)
     );
@@ -95,13 +105,15 @@ const Map = () => {
       - Update run distance state
       - Set directions on DirectionsRenderer
   */
-  const directionsServiceCallback = (result: any, status: any) => {
+  const directionsServiceCallback = (
+    result: google.maps.DirectionsResult,
+    status: google.maps.DirectionsStatus
+  ) => {
     if (status == "OK") {
       console.log("dist: ", result.routes[0].legs[0].distance);
       setRunDistance(result.routes[0].legs[0].distance);
 
-      //@ts-ignore
-      directionsRenderer.current.setDirections(result);
+      directionsRenderer.current!.setDirections(result);
     } else {
       console.log("directionsServiceCallback", result, status);
     }
@@ -116,7 +128,6 @@ const Map = () => {
   ) => {
     let distanceObject = result.routes[0].legs[0].distance;
 
-    //@ts-ignore
     setRunDistance({ text: distanceObject.text, value: distanceObject.value });
   };
 
