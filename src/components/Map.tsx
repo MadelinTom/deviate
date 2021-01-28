@@ -58,19 +58,21 @@ const Map = () => {
   const onLoad = React.useCallback(function callback(
     map: google.maps.Map<Element>
   ) {
-    map.setOptions({
-      styles: mapStyle,
-      disableDefaultUI: true,
-    } as google.maps.MapOptions);
-
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(function (position) {
-        console.log(position.coords.latitude);
-        console.log(position.coords.longitude);
         setPosition({
           lat: position.coords.latitude,
           long: position.coords.longitude,
         });
+
+        map.setOptions({
+          center: new google.maps.LatLng(
+            position.coords.latitude,
+            position.coords.longitude
+          ),
+          styles: mapStyle,
+          disableDefaultUI: true,
+        } as google.maps.MapOptions);
       });
     }
 
@@ -147,7 +149,6 @@ const Map = () => {
         <div style={{ height: "100vh", width: "100%" }}>
           <GoogleMap
             mapContainerStyle={containerStyle}
-            center={new google.maps.LatLng(position.lat, position.long)}
             onLoad={onLoad}
             onUnmount={onUnmount}
             zoom={14}
