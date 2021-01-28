@@ -1,5 +1,3 @@
-import React from "react";
-
 export const DistanceTab = ({distance}: any) => {
   const {text, value} = distance;
   const kilometers = (value / 1000).toFixed(1);
