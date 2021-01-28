@@ -25,7 +25,7 @@ const Map = () => {
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
     googleMapsApiKey:
-      process.env.API_KEY || "API_KEY",
+      process.env.REACT_APP_API_KEY || "API_KEY",
   });
 
   useEffect(() => {
@@ -46,18 +46,9 @@ const Map = () => {
     }
   }, [isLoaded]);
 
-  const directionsServiceCallback = (result: any, status: any) => {
-    if (status == "OK") {
-      console.log("dist: ", result.routes[0].legs[0].distance);
-      setRunDistance(result.routes[0].legs[0].distance);
-
-      //@ts-ignore
-      directionsRenderer.current.setDirections(result);
-    } else {
-      console.log("directionsServiceCallback", result, status);
-    }
-  };
-
+  /*
+    Map setup and teardown callbacks
+  */
   const onLoad = React.useCallback(function callback(map) {
     map.setOptions({ styles: mapStyle, disableDefaultUI: true });
 
@@ -82,6 +73,9 @@ const Map = () => {
     setMap(null);
   }, []);
 
+  /*
+    Generate button onClick handler
+  */
   const calculateNewCoords = (dist: number) => {
     const directionsServiceOptions = getDirectionsServiceOptions(
       position.lat,
@@ -96,20 +90,34 @@ const Map = () => {
     );
   };
 
+  /*
+    DirectionsService callback 
+      - Update run distance state
+      - Set directions on DirectionsRenderer
+  */
+  const directionsServiceCallback = (result: any, status: any) => {
+    if (status == "OK") {
+      console.log("dist: ", result.routes[0].legs[0].distance);
+      setRunDistance(result.routes[0].legs[0].distance);
+
+      //@ts-ignore
+      directionsRenderer.current.setDirections(result);
+    } else {
+      console.log("directionsServiceCallback", result, status);
+    }
+  };
+
+  /*
+    DirectionsRenderer callback
+      - Update run distance state
+  */
   const computeTotalDistanceFromDirectionsResult = (
     result: google.maps.DirectionsResult
   ) => {
-    let total = 0;
-    let textValue = result.routes[0].legs[0].distance; // assumes only 1 leg
-    const myroute = result.routes[0];
-
-    for (let i = 0; i < myroute.legs.length; i++) {
-      total += myroute.legs[i].distance.value;
-    }
-    total = total / 1000;
+    let distanceObject = result.routes[0].legs[0].distance;
 
     //@ts-ignore
-    setRunDistance({ text: textValue.text, value: textValue.value });
+    setRunDistance({ text: distanceObject.text, value: distanceObject.value });
   };
 
   return isLoaded ? (
