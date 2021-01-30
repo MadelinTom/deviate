@@ -1,5 +1,11 @@
-export const DistanceTab = ({distance}: any) => {
-  const {text, value} = distance;
+import { RunDistance } from "../types/Map";
+
+export interface DistanceTabProps {
+  distance: RunDistance;
+}
+
+export const DistanceTab = ({ distance }: DistanceTabProps) => {
+  const { text, value } = distance;
   const kilometers = (value / 1000).toFixed(1);
 
   return (

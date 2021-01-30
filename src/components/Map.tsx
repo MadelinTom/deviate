@@ -4,6 +4,7 @@ import { GoogleMap, useJsApiLoader } from "@react-google-maps/api";
 import { DistanceTab } from "./DistanceTab";
 import { GenerateTab } from "./GenerateTab";
 import { getDirectionsServiceOptions } from "../util";
+import { Position, RunDistance } from "../types/Map";
 import mapStyle from "../mapStyle.json";
 
 const containerStyle = {
@@ -13,16 +14,6 @@ const containerStyle = {
   "justify-content": "space-between",
   "flex-direction": "column-reverse",
 };
-
-interface RunDistance {
-  text: string;
-  value: number;
-}
-
-interface Position {
-  lat: number;
-  long: number;
-}
 
 const Map = () => {
   const [position, setPosition] = useState<Position>({ lat: 0, long: 0 });
@@ -98,7 +89,10 @@ const Map = () => {
 
     directionsService.current!.route(
       directionsServiceOptions,
-      (result: any, status: any) => directionsServiceCallback(result, status)
+      (
+        result: google.maps.DirectionsResult,
+        status: google.maps.DirectionsStatus
+      ) => directionsServiceCallback(result, status)
     );
   };
 

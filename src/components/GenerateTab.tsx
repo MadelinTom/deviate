@@ -1,6 +1,10 @@
 import { useState } from "react";
 
-export const GenerateTab = ({onClick}: any) => {
+type GenerateTabProps = {
+  onClick: (input: number) => void;
+};
+
+export const GenerateTab = ({ onClick }: GenerateTabProps) => {
   const [input, setInput] = useState(5000);
 
   return (
@@ -25,7 +29,7 @@ export const GenerateTab = ({onClick}: any) => {
           margin: "50px",
         }}
       >
-        <form style={{ zIndex: 2, margin: "10px", minWidth: "70px",  }}>
+        <form style={{ zIndex: 2, margin: "10px", minWidth: "70px" }}>
           <label>Distance in km:</label>
           <br />
           <input

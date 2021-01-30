@@ -1,3 +1,5 @@
+import { Position } from "./types/Map";
+
 /*
     Destination point given distance and bearing from start point: 
     https://www.movable-type.co.uk/scripts/latlong.html
@@ -11,7 +13,7 @@ export const getRandomLatLonWithDistance = (
   currentLattitude: number,
   currentLongitude: number,
   distance: number
-) => {
+): Position => {
   let R = 6371e3; // Earth's radius in km
   let B = (generateRandomBearingInRadians() * Math.PI) / 180; // Clockwise from north in radians
 
@@ -41,11 +43,11 @@ export const getRandomLatLonWithDistance = (
 /*
     Generate a random bearing (0 - 360 degrees)
 */
-export const generateRandomBearingInRadians = () => {
+export const generateRandomBearingInRadians = (): number => {
   return randomIntFromInterval(0, 360);
 };
 
-const randomIntFromInterval = (min: number, max: number) => {
+const randomIntFromInterval = (min: number, max: number): number => {
   // min and max included
   return Math.floor(Math.random() * (max - min + 1) + min);
 };
@@ -60,23 +62,37 @@ const randomIntFromInterval = (min: number, max: number) => {
 export const getDirectionsServiceOptions = (
   currentLat: number,
   currentLong: number,
-  distance: number,
-) => {
+  distance: number
+): google.maps.DirectionsRequest => {
   const dist = distance / 3;
 
-  const firstRandomWaypoint = getRandomLatLonWithDistance(currentLat, currentLong, dist);
-  const secondRandomWaypoint = getRandomLatLonWithDistance(currentLat, currentLong, dist);
+  const firstRandomWaypoint = getRandomLatLonWithDistance(
+    currentLat,
+    currentLong,
+    dist
+  );
+  const secondRandomWaypoint = getRandomLatLonWithDistance(
+    currentLat,
+    currentLong,
+    dist
+  );
 
   let result = {
     origin: new google.maps.LatLng(currentLat, currentLong),
     destination: new google.maps.LatLng(currentLat, currentLong),
     waypoints: [
       {
-        location: new google.maps.LatLng(firstRandomWaypoint.lat, firstRandomWaypoint.long),
+        location: new google.maps.LatLng(
+          firstRandomWaypoint.lat,
+          firstRandomWaypoint.long
+        ),
         stopover: false,
       },
       {
-        location: new google.maps.LatLng(secondRandomWaypoint.lat, secondRandomWaypoint.long),
+        location: new google.maps.LatLng(
+          secondRandomWaypoint.lat,
+          secondRandomWaypoint.long
+        ),
         stopover: false,
       },
     ],
