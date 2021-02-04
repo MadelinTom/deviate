@@ -11,14 +11,13 @@ const containerStyle = {
   width: "100%",
   height: "100%",
   display: "flex",
-  "justify-content": "space-between",
-  "flex-direction": "column-reverse",
+  justifyContent: "space-between",
+  "flex-direction": "column-reverse", // type error if using flexDirection
 };
 
 const Map = () => {
   const [position, setPosition] = useState<Position>({ lat: 0, long: 0 });
   const [runDistance, setRunDistance] = useState<RunDistance | null>(null);
-  const [map, setMap] = React.useState<google.maps.Map<Element> | null>(null);
 
   const directionsService = useRef<google.maps.DirectionsService>();
   const directionsRenderer = useRef<google.maps.DirectionsRenderer>();
@@ -44,7 +43,7 @@ const Map = () => {
   }, [isLoaded]);
 
   /*
-    Map setup and teardown callbacks
+    Map setup callback
   */
   const onLoad = React.useCallback(function callback(
     map: google.maps.Map<Element>
@@ -68,14 +67,8 @@ const Map = () => {
     }
 
     directionsRenderer.current!.setMap(map);
-
-    setMap(map);
   },
   []);
-
-  const onUnmount = React.useCallback(function callback(map) {
-    setMap(null);
-  }, []);
 
   /*
     Generate button onClick handler
@@ -105,8 +98,7 @@ const Map = () => {
     result: google.maps.DirectionsResult,
     status: google.maps.DirectionsStatus
   ) => {
-    if (status == "OK") {
-      console.log("dist: ", result.routes[0].legs[0].distance);
+    if (status === "OK") {
       setRunDistance(result.routes[0].legs[0].distance);
 
       directionsRenderer.current!.setDirections(result);
@@ -144,7 +136,6 @@ const Map = () => {
           <GoogleMap
             mapContainerStyle={containerStyle}
             onLoad={onLoad}
-            onUnmount={onUnmount}
             zoom={14}
           >
             {/* DISTANCE AND GENERATE BUTTON */}
